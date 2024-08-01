@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class KafkaConsumer {
-	@KafkaListener(groupId = "NEW_ORDER_group", topics = "NEW_ORDER",containerFactory = "orderListener")
+	@KafkaListener(groupId = "NEW_ORDER_group", topics = "NEW_ORDER")
 	public void consume(OrderMessage orderMessage,Acknowledgment acknowledgment) {
 		System.out.println(orderMessage);
 		acknowledgment.acknowledge();

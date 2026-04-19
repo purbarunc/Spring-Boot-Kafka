@@ -1,167 +1,83 @@
-Spring-Boot-Kafka
+﻿# Spring-Boot-Kafka
 
-# Kafka with KRaft (No Zookeeper) — Docker Setup
-===
+## Kafka with KRaft (No Zookeeper) — Docker Setup
 
-# 
+Latest Apache Kafka running in KRaft mode (Kafka Raft Metadata mode), which replaces Zookeeper entirely.
 
-# Latest Apache Kafka running in \*\*KRaft mode\*\* (Kafka Raft Metadata mode), which replaces Zookeeper entirely.
+## Services
 
-# 
+| Service     | Image                          | Port  | Description               |
+|-------------|--------------------------------|-------|---------------------------|
+| `kafka`     | `apache/kafka:latest`          | 9092  | Kafka broker (KRaft mode) |
+| `kafka-ui`  | `provectuslabs/kafka-ui:latest`| 8080  | Web UI for Kafka           |
 
-# \## Services
+## Quick Start
 
-# 
+```bash
+# Start all services
+docker compose up -d
 
-# | Service     | Image                          | Port  | Description               |
+# Check status
+docker compose ps
 
-# |-------------|--------------------------------|-------|---------------------------|
+# View Kafka logs
+docker compose logs -f kafka
+```
 
-# | `kafka`     | `apache/kafka:latest`          | 9092  | Kafka broker (KRaft mode) |
+Open Kafka UI at: http://localhost:8080
 
-# | `kafka-ui`  | `provectuslabs/kafka-ui:latest`| 8080  | Web UI for Kafka           |
+## Useful Kafka Commands
 
-# 
+All commands run inside the Kafka container:
 
-# \## Quick Start
+```bash
+# Enter the container
+docker exec -it kafka-kraft bash
 
-# 
+# List topics
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
 
-# ```bash
+# Create a topic
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 \
+  --create --topic my-topic --partitions 3 --replication-factor 1
 
-# \# Start all services
+# Describe a topic
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 \
+  --describe --topic my-topic
 
-# docker compose up -d
+# Produce messages
+/opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 \
+  --topic my-topic
 
-# 
+# Consume messages (from beginning)
+/opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+  --topic my-topic --from-beginning
 
-# \# Check status
+# Delete a topic
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 \
+  --delete --topic my-topic
+```
 
-# docker compose ps
+## Connect from Your App
 
-# 
+Use `localhost:9092` as the bootstrap server from your host machine.
 
-# \# View Kafka logs
+```
+bootstrap.servers=localhost:9092
+```
 
-# docker compose logs -f kafka
+## Stop & Clean Up
 
-# ```
+```bash
+# Stop services (keeps data)
+docker compose down
 
-# 
+# Stop and remove all data (volumes)
+docker compose down -v
+```
 
-# Open \*\*Kafka UI\*\* at: http://localhost:8080
+## KRaft Configuration Notes
 
-# 
-
-# \## Useful Kafka Commands
-
-# 
-
-# All commands run inside the Kafka container:
-
-# 
-
-# ```bash
-
-# \# Enter the container
-
-# docker exec -it kafka-kraft bash
-
-# 
-
-# \# List topics
-
-# /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
-
-# 
-
-# \# Create a topic
-
-# /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 \\
-
-# &#x20; --create --topic my-topic --partitions 3 --replication-factor 1
-
-# 
-
-# \# Describe a topic
-
-# /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 \\
-
-# &#x20; --describe --topic my-topic
-
-# 
-
-# \# Produce messages
-
-# /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 \\
-
-# &#x20; --topic my-topic
-
-# 
-
-# \# Consume messages (from beginning)
-
-# /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \\
-
-# &#x20; --topic my-topic --from-beginning
-
-# 
-
-# \# Delete a topic
-
-# /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 \\
-
-# &#x20; --delete --topic my-topic
-
-# ```
-
-# 
-
-# \## Connect from Your App
-
-# 
-
-# Use `localhost:9092` as the bootstrap server from your host machine.
-
-# 
-
-# ```
-
-# bootstrap.servers=localhost:9092
-
-# ```
-
-# 
-
-# \## Stop \& Clean Up
-
-# 
-
-# ```bash
-
-# \# Stop services (keeps data)
-
-# docker compose down
-
-# 
-
-# \# Stop and remove all data (volumes)
-
-# docker compose down -v
-
-# ```
-
-# 
-
-# \## KRaft Configuration Notes
-
-# 
-
-# \- \*\*No Zookeeper\*\* required — this node acts as both broker and controller (`KAFKA\_PROCESS\_ROLES: broker,controller`)
-
-# \- `CLUSTER\_ID` is a fixed base64-encoded UUID — change it if you need a fresh cluster
-
-# \- Data is persisted in the `kafka-data` Docker volume
-
-
-
+- No Zookeeper required — this node acts as both broker and controller (`KAFKA_PROCESS_ROLES: broker,controller`)
+- `CLUSTER_ID` is a fixed base64-encoded UUID — change it if you need a fresh cluster
+- Data is persisted in the `kafka-data` Docker volume

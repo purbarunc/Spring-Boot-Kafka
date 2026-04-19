@@ -9,7 +9,7 @@ Latest Apache Kafka running in KRaft mode (Kafka Raft Metadata mode), which repl
 | Service     | Image                          | Port  | Description               |
 |-------------|--------------------------------|-------|---------------------------|
 | `kafka`     | `apache/kafka:latest`          | 9092  | Kafka broker (KRaft mode) |
-| `kafka-ui`  | `provectuslabs/kafka-ui:latest`| 8080  | Web UI for Kafka           |
+| `kafka-ui`  | `provectuslabs/kafka-ui:latest`| 8090  | Web UI for Kafka           |
 
 ## Quick Start
 
@@ -24,7 +24,7 @@ docker compose ps
 docker compose logs -f kafka
 ```
 
-Open Kafka UI at: http://localhost:8080
+Open Kafka UI at: http://localhost:8090
 
 ## Useful Kafka Commands
 
@@ -81,3 +81,8 @@ docker compose down -v
 - No Zookeeper required — this node acts as both broker and controller (`KAFKA_PROCESS_ROLES: broker,controller`)
 - `CLUSTER_ID` is a fixed base64-encoded UUID — change it if you need a fresh cluster
 - Data is persisted in the `kafka-data` Docker volume
+
+
+## Kafka UI
+
+![alt text](image.png)

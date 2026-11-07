@@ -43,6 +43,47 @@ The app has **no web server**. It stays alive purely because of Kafka's listener
 
 ---
 
+## Why Messages Are Not Re-consumed on Restart
+
+Kafka tracks **how far each consumer group has read** by storing committed offsets in its internal
+`__consumer_offsets` topic on the broker — one offset per `(group-id, topic, partition)` combination.
+
+This app uses group-id `order-consumer-group`. Here is what happens across restarts:
+
+```
+First run
+─────────
+  No committed offset exists for "order-consumer-group"
+  → auto-offset-reset=earliest kicks in
+  → consumer reads from offset 0 on every partition
+  → after each poll batch, Spring Kafka commits the offsets back to Kafka
+
+Second run (and every run after)
+─────────────────────────────────
+  Committed offset for "order-consumer-group" already exists (e.g. offset 42)
+  → auto-offset-reset is IGNORED — it only applies when there is NO committed offset
+  → consumer picks up from offset 43
+  → no new messages → nothing consumed
+```
+
+> `auto-offset-reset=earliest` is a **bootstrap policy only**. Once a committed offset exists on the
+> broker for the group, that setting has no effect regardless of what is in `application.properties`.
+
+### Options to re-consume existing messages
+
+| Approach | How | Side effect |
+|---|---|---|
+| **Replay mode (built-in)** | `--kafka.replay.mode=beginning` at startup | Only this instance re-reads; committed offset on broker is **not** changed |
+| **Reset the group offset** | `kafka-consumer-groups.sh --reset-offsets --to-earliest --group order-consumer-group --topic order-service --execute` | Permanently changes the committed offset for the whole group |
+| **Change the group-id** | Use a new value for `spring.kafka.consumer.group-id` | Acts like a first-time consumer; old group offset is left intact |
+| **Delete the consumer group** | Delete the group while it is idle | Destructive — group metadata is gone |
+
+The **replay mode** built into this app (see section below) is the cleanest option: it re-reads
+messages in that one JVM run without touching the committed offset on the broker, so the next
+normal restart picks up only new messages again.
+
+---
+
 ## Message Replay
 
 The consumer implements `ConsumerSeekAware`, which provides a `ConsumerSeekCallback` per partition at the moment partitions are assigned — **before the first `poll()`**. This allows seeking to any position before consumption begins.
